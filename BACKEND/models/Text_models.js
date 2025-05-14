@@ -3,11 +3,46 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const textSchema = new Schema({
-    text: {
+    date: {
         type: String,
-        required: true,
+        required: false
     },
-    // Add any other fields you need for your text schema here
+    time: {
+        type: String,
+        required: false
+    },
+    intrusion_observed: {
+        type: String,
+        required: false
+    },
+    devname: {
+        type: String,
+        required: false
+    },
+    srcip: {
+        type: String,
+        required: false
+    },
+    dstip: {
+        type: String,
+        required: false
+    },
+    dstcountry: {
+        type: String,
+        required: false
+    },
+    crlevel: {
+        type: String,
+        required: false
+    },
+    attack: {
+        type: String,
+        required: false
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
 });
 
 const Text = mongoose.model("Text", textSchema);
