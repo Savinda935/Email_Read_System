@@ -127,4 +127,34 @@ router.post("/extract", async (req, res) => {
     }
 });
 
+// Delete a text entry by ID
+router.delete("/delete/:id", async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const deletedText = await Text.findByIdAndDelete(id);
+
+        if (!deletedText) {
+            return res.status(404).json({
+                status: "Error",
+                message: `No entry found with ID: ${id}`
+            });
+        }
+
+        res.status(200).json({
+            status: "Success",
+            message: "Entry deleted successfully",
+            data: deletedText
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            status: "Error",
+            message: "Failed to delete the entry",
+            error: err.message
+        });
+    }
+});
+
+
 module.exports = router;

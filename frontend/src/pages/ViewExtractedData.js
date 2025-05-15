@@ -5,26 +5,45 @@ const ViewExtractedData = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError("");
-      try {
-        const response = await fetch("http://localhost:8081/Text/all");
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        const responseData = await response.json();
-        setData(responseData.data || []); // Ensure data is an array
-      } catch (err) {
-        setError(err.message || "An error occurred");
-      } finally {
-        setLoading(false);
+  const fetchData = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch("http://localhost:8081/Text/all");
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
-    };
+      const responseData = await response.json();
+      setData(responseData.data || []);
+    } catch (err) {
+      setError(err.message || "An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchData();
   }, []);
+
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this entry?");
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetch(`http://localhost:8081/Text/delete/${id}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        throw new Error(`Delete failed: ${response.status}`);
+      }
+
+      // Remove deleted item from state
+      setData((prevData) => prevData.filter((item) => item._id !== id));
+    } catch (err) {
+      alert("Error deleting item: " + err.message);
+    }
+  };
 
   return (
     <div style={{
@@ -44,7 +63,7 @@ const ViewExtractedData = () => {
         textAlign: "center",
         textShadow: "1px 1px 2px rgba(0,0,0,0.1)"
       }}>Extracted Data</h2>
-      
+
       {loading && (
         <div style={{
           padding: "30px",
@@ -64,7 +83,7 @@ const ViewExtractedData = () => {
           <p style={{ marginTop: "15px" }}>Loading...</p>
         </div>
       )}
-      
+
       {error && (
         <div style={{
           padding: "20px",
@@ -79,7 +98,7 @@ const ViewExtractedData = () => {
           <p>{error}</p>
         </div>
       )}
-      
+
       {!loading && !error && data.length > 0 && (
         <div style={{ overflowX: "auto" }}>
           <table style={{
@@ -93,166 +112,64 @@ const ViewExtractedData = () => {
           }}>
             <thead>
               <tr>
-                <th style={{
-                  padding: "15px",
-                  textAlign: "left",
-                  backgroundColor: "#2c5282",
-                  color: "white",
-                  fontWeight: "bold",
-                  borderBottom: "2px solid #1a365d"
-                }}>Date</th>
-                <th style={{
-                  padding: "15px",
-                  textAlign: "left",
-                  backgroundColor: "#2c5282",
-                  color: "white",
-                  fontWeight: "bold",
-                  borderBottom: "2px solid #1a365d"
-                }}>Time</th>
-                <th style={{
-                  padding: "15px",
-                  textAlign: "left",
-                  backgroundColor: "#2c5282",
-                  color: "white",
-                  fontWeight: "bold",
-                  borderBottom: "2px solid #1a365d"
-                }}>Intrusion Observed</th>
-                <th style={{
-                  padding: "15px",
-                  textAlign: "left",
-                  backgroundColor: "#2c5282",
-                  color: "white",
-                  fontWeight: "bold",
-                  borderBottom: "2px solid #1a365d"
-                }}>Device Name</th>
-                <th style={{
-                  padding: "15px",
-                  textAlign: "left",
-                  backgroundColor: "#2c5282",
-                  color: "white",
-                  fontWeight: "bold",
-                  borderBottom: "2px solid #1a365d"
-                }}>Source IP</th>
-                <th style={{
-                  padding: "15px",
-                  textAlign: "left",
-                  backgroundColor: "#2c5282",
-                  color: "white",
-                  fontWeight: "bold",
-                  borderBottom: "2px solid #1a365d"
-                }}>Destination IP</th>
-                <th style={{
-                  padding: "15px",
-                  textAlign: "left",
-                  backgroundColor: "#2c5282",
-                  color: "white",
-                  fontWeight: "bold",
-                  borderBottom: "2px solid #1a365d"
-                }}>Destination Country</th>
-                <th style={{
-                  padding: "15px",
-                  textAlign: "left",
-                  backgroundColor: "#2c5282",
-                  color: "white",
-                  fontWeight: "bold",
-                  borderBottom: "2px solid #1a365d"
-                }}>Critical Level</th>
-                <th style={{
-                  padding: "15px",
-                  textAlign: "left",
-                  backgroundColor: "#2c5282",
-                  color: "white",
-                  fontWeight: "bold",
-                  borderBottom: "2px solid #1a365d"
-                }}>Attack</th>
+                {["Date", "Time", "Intrusion Observed", "Device Name", "Source IP", "Destination IP", "Destination Country", "Critical Level", "Attack", "Action"].map(header => (
+                  <th key={header} style={{
+                    padding: "15px",
+                    textAlign: "left",
+                    backgroundColor: "#2c5282",
+                    color: "white",
+                    fontWeight: "bold",
+                    borderBottom: "2px solid #1a365d"
+                  }}>{header}</th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {data.map((item, index) => {
-                // Determine critical level styling
                 let criticalLevelStyle = {};
                 if (item.crlevel) {
-                  const levelLower = item.crlevel.toLowerCase();
-                  if (levelLower.includes('critical')) {
-                    criticalLevelStyle = {
-                      backgroundColor: "#fecaca",
-                      color: "#dc2626",
-                      fontWeight: "bold"
-                    };
-                  } else if (levelLower.includes('high')) {
-                    criticalLevelStyle = {
-                      backgroundColor: "#fed7aa",
-                      color: "#ea580c",
-                      fontWeight: "bold"
-                    };
-                  } else if (levelLower.includes('medium')) {
-                    criticalLevelStyle = {
-                      backgroundColor: "#fef08a",
-                      color: "#ca8a04",
-                      fontWeight: "bold"
-                    };
-                  } else if (levelLower.includes('low')) {
-                    criticalLevelStyle = {
-                      backgroundColor: "#bbf7d0",
-                      color: "#16a34a",
-                      fontWeight: "bold"
-                    };
+                  const level = item.crlevel.toLowerCase();
+                  if (level.includes('critical')) {
+                    criticalLevelStyle = { backgroundColor: "#fecaca", color: "#dc2626", fontWeight: "bold" };
+                  } else if (level.includes('high')) {
+                    criticalLevelStyle = { backgroundColor: "#fed7aa", color: "#ea580c", fontWeight: "bold" };
+                  } else if (level.includes('medium')) {
+                    criticalLevelStyle = { backgroundColor: "#fef08a", color: "#ca8a04", fontWeight: "bold" };
+                  } else if (level.includes('low')) {
+                    criticalLevelStyle = { backgroundColor: "#bbf7d0", color: "#16a34a", fontWeight: "bold" };
                   }
                 }
 
-                // Determine row background color
                 const rowBackground = index % 2 === 0 ? "#f0f9ff" : "#e0f2fe";
-                
+
                 return (
-                  <tr key={index} style={{
-                    backgroundColor: rowBackground,
-                    transition: "background-color 0.2s"
-                  }}>
-                    <td style={{
-                      padding: "12px 15px",
-                      borderBottom: "1px solid #cbd5e1"
-                    }}>{item.date || "N/A"}</td>
-                    <td style={{
-                      padding: "12px 15px",
-                      borderBottom: "1px solid #cbd5e1"
-                    }}>{item.time || "N/A"}</td>
-                    <td style={{
-                      padding: "12px 15px",
-                      borderBottom: "1px solid #cbd5e1"
-                    }}>{item.intrusion_observed || "N/A"}</td>
-                    <td style={{
-                      padding: "12px 15px",
-                      borderBottom: "1px solid #cbd5e1"
-                    }}>{item.devname || "N/A"}</td>
-                    <td style={{
-                      padding: "12px 15px",
-                      borderBottom: "1px solid #cbd5e1",
-                      color: "#1e40af",
-                      fontFamily: "monospace",
-                      fontWeight: "500"
-                    }}>{item.srcip || "N/A"}</td>
-                    <td style={{
-                      padding: "12px 15px",
-                      borderBottom: "1px solid #cbd5e1",
-                      color: "#1e40af",
-                      fontFamily: "monospace",
-                      fontWeight: "500"
-                    }}>{item.dstip || "N/A"}</td>
-                    <td style={{
-                      padding: "12px 15px",
-                      borderBottom: "1px solid #cbd5e1"
-                    }}>{item.dstcountry || "N/A"}</td>
-                    <td style={{
-                      padding: "12px 15px",
-                      borderBottom: "1px solid #cbd5e1",
-                      ...criticalLevelStyle
-                    }}>{item.crlevel || "N/A"}</td>
-                    <td style={{
-                      padding: "12px 15px",
-                      borderBottom: "1px solid #cbd5e1",
-                      color: "#7e22ce",
-                      fontWeight: item.attack ? "bold" : "normal"
-                    }}>{item.attack || "N/A"}</td>
+                  <tr key={item._id || index} style={{ backgroundColor: rowBackground, transition: "background-color 0.2s" }}>
+                    <td style={{ padding: "12px 15px", borderBottom: "1px solid #cbd5e1" }}>{item.date || "N/A"}</td>
+                    <td style={{ padding: "12px 15px", borderBottom: "1px solid #cbd5e1" }}>{item.time || "N/A"}</td>
+                    <td style={{ padding: "12px 15px", borderBottom: "1px solid #cbd5e1" }}>{item.intrusion_observed || "N/A"}</td>
+                    <td style={{ padding: "12px 15px", borderBottom: "1px solid #cbd5e1" }}>{item.devname || "N/A"}</td>
+                    <td style={{ padding: "12px 15px", borderBottom: "1px solid #cbd5e1", fontFamily: "monospace", fontWeight: "500", color: "#1e40af" }}>{item.srcip || "N/A"}</td>
+                    <td style={{ padding: "12px 15px", borderBottom: "1px solid #cbd5e1", fontFamily: "monospace", fontWeight: "500", color: "#1e40af" }}>{item.dstip || "N/A"}</td>
+                    <td style={{ padding: "12px 15px", borderBottom: "1px solid #cbd5e1" }}>{item.dstcountry || "N/A"}</td>
+                    <td style={{ padding: "12px 15px", borderBottom: "1px solid #cbd5e1", ...criticalLevelStyle }}>{item.crlevel || "N/A"}</td>
+                    <td style={{ padding: "12px 15px", borderBottom: "1px solid #cbd5e1", fontWeight: item.attack ? "bold" : "normal", color: "#7e22ce" }}>{item.attack || "N/A"}</td>
+                    <td style={{ padding: "12px 15px", borderBottom: "1px solid #cbd5e1" }}>
+                      <button
+                        onClick={() => handleDelete(item._id)}
+                        style={{
+                          padding: "6px 12px",
+                          backgroundColor: "#e53e3e",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "5px",
+                          cursor: "pointer",
+                          fontWeight: "bold",
+                          fontSize: "14px"
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </td>
                   </tr>
                 );
               })}
@@ -260,7 +177,7 @@ const ViewExtractedData = () => {
           </table>
         </div>
       )}
-      
+
       {!loading && !error && data.length === 0 && (
         <div style={{
           padding: "30px",
