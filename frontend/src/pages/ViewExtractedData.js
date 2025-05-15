@@ -10,7 +10,7 @@ const ViewExtractedData = () => {
       setLoading(true);
       setError("");
       try {
-        const response = await fetch("http://localhost:8081/Text/extract");
+        const response = await fetch("http://localhost:8081/Text/all");
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
