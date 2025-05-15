@@ -12,7 +12,7 @@ const AddEmailAndExtract = () => {
     setLoading(true);
     setError("");
     setExtractedData(null);
-
+    
     try {
       const response = await fetch("http://localhost:8081/Text/extract", {
         method: 'POST',

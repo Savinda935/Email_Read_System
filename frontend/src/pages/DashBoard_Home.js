@@ -13,7 +13,7 @@ const DashboardHome = () => {
       { name: "United Kingdom", count: 89, color: "#8b5cf6" },
       { name: "Germany", count: 79, color: "#f59e0b" },
       { name: "Others", count: 33, color: "#6b7280" }
-    ]
+    ]   
   });
 
   const [recentEmails, setRecentEmails] = useState([
