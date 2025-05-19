@@ -9,7 +9,7 @@ const ViewExtractedData = () => {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch("http://localhost:8081/Text/all");
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8081'}/Text/all`);
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
@@ -31,7 +31,7 @@ const ViewExtractedData = () => {
     if (!confirmDelete) return;
 
     try {
-      const response = await fetch(`http://localhost:8081/Text/delete/${id}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8081'}/Text/delete/${id}`, {
         method: "DELETE",
       });
       if (!response.ok) {

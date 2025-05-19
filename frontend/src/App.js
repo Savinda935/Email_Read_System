@@ -16,8 +16,6 @@ function App() {
           <Route path="/inbox" element={<DashBoardHome />} />
           <Route path="/addemail" element={<AddEmailAndExtract />} />
           <Route path="/extractdata" element={<ViewExtractedData />} />
-          
-          
         </Routes>
       </div>
     </div>
