@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { Download, FileText, FileDown } from "lucide-react";
+import ReportGenerator from "../components/ReportGenerator";
+import { generateIndividualReport, generateBulkReport } from "../utils/pdfGenerator";
 
 const ViewExtractedData = () => {
   const [data, setData] = useState([]);
@@ -45,6 +48,24 @@ const ViewExtractedData = () => {
     }
   };
 
+  const handleGenerateBulkReport = async () => {
+    try {
+      generateBulkReport(data);
+    } catch (error) {
+      console.error('Error generating bulk report:', error);
+      throw error;
+    }
+  };
+
+  const handleGenerateIndividualReport = async (item) => {
+    try {
+      generateIndividualReport(item);
+    } catch (error) {
+      console.error('Error generating individual report:', error);
+      throw error;
+    }
+  };
+
   return (
     <div style={{
       maxWidth: "100%",
@@ -58,11 +79,17 @@ const ViewExtractedData = () => {
       <h2 style={{
         fontSize: "28px",
         fontWeight: "bold",
-        marginBottom: "20px",
         color: "#1a56db",
         textAlign: "center",
-        textShadow: "1px 1px 2px rgba(0,0,0,0.1)"
+        textShadow: "1px 1px 2px rgba(0,0,0,0.1)",
+        margin: "0 0 20px 0"
       }}>Extracted Data</h2>
+
+      <ReportGenerator
+        data={data}
+        onGenerateBulk={handleGenerateBulkReport}
+        onGenerateIndividual={handleGenerateIndividualReport}
+      />
 
       {loading && (
         <div style={{
@@ -112,7 +139,7 @@ const ViewExtractedData = () => {
           }}>
             <thead>
               <tr>
-                {["Date", "Time", "Intrusion Observed", "Device Name", "Source IP", "Destination IP", "Destination Country", "Critical Level", "Attack", "Action"].map(header => (
+                {["Date", "Time", "Intrusion Observed", "Device Name", "Source IP", "Destination IP", "Destination Country", "Critical Level", "Attack", "Actions"].map(header => (
                   <th key={header} style={{
                     padding: "15px",
                     textAlign: "left",
@@ -154,21 +181,41 @@ const ViewExtractedData = () => {
                     <td style={{ padding: "12px 15px", borderBottom: "1px solid #cbd5e1", ...criticalLevelStyle }}>{item.crlevel || "N/A"}</td>
                     <td style={{ padding: "12px 15px", borderBottom: "1px solid #cbd5e1", fontWeight: item.attack ? "bold" : "normal", color: "#7e22ce" }}>{item.attack || "N/A"}</td>
                     <td style={{ padding: "12px 15px", borderBottom: "1px solid #cbd5e1" }}>
-                      <button
-                        onClick={() => handleDelete(item._id)}
-                        style={{
-                          padding: "6px 12px",
-                          backgroundColor: "#e53e3e",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "5px",
-                          cursor: "pointer",
-                          fontWeight: "bold",
-                          fontSize: "14px"
-                        }}
-                      >
-                        Delete
-                      </button>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <button
+                          onClick={() => handleGenerateIndividualReport(item)}
+                          style={{
+                            padding: "6px 12px",
+                            backgroundColor: "#3b82f6",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "5px",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "4px",
+                            fontSize: "12px"
+                          }}
+                          title="Generate Individual Report"
+                        >
+                          <FileDown size={14} />
+                          Report
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item._id)}
+                          style={{
+                            padding: "6px 12px",
+                            backgroundColor: "#e53e3e",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "5px",
+                            cursor: "pointer",
+                            fontSize: "12px"
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -193,6 +240,14 @@ const ViewExtractedData = () => {
           <p style={{ marginTop: "8px", color: "#6b7280" }}>Try again later or check your connection settings</p>
         </div>
       )}
+
+      <style>
+        {`
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        `}
+      </style>
     </div>
   );
 };
